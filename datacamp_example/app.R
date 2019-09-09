@@ -8,10 +8,11 @@ ui <- fluidPage(
                         fileInput(inputId = "data_file", label = "Choose CSV File",
                                   accept = ".csv", buttonLabel = "Browse...",
                                   placeholder = "No file selected"),
-                        dateRangeInput(inputId = "date_range", label = "Period", start = NULL, end = NULL, min = NULL,
-                                       max = NULL, format = "yyyy-mm-dd", startview = "day", weekstart = 0,
-                                       language = "en", separator = " to ", width = NULL),
-                        checkboxGroupInput(inputId = "country", label = "choose country",choices = c("Japan", "Republic of Korea","United States of America", "France"))
+                       
+                         sliderInput(inputId = "date_range",label = "Select period", value = c(1990, 2000),min = 1970,
+                                     max = 2020),
+                       
+                         checkboxGroupInput(inputId = "country", label = "choose country",choices = c("Japan", "Republic of Korea","United States of America", "France"))
                         
                 ),
                 mainPanel(plotOutput(outputId = "plot"))
@@ -30,6 +31,7 @@ server <- function(input, output) {
         # filter and group 4 countries
         df_filtered <- df %>%
                 filter(country == input$country ) %>%
+                filter(year > input$date_range[1] & year < input$date_range[2]) %>%
                 group_by(country, year) %>%
                 summarize(total_no = sum(suicides_no),
                           total_pop = sum(population),
