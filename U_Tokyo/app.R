@@ -35,7 +35,7 @@ ui <- fluidPage(
                                  sidebarPanel(
                                          numericInput(inputId = "patientID2", label = "Input Patient ID", value = NULL),
                                          dateRangeInput(inputId = "daterange", label = "Select the period", start = Sys.Date()-6, end = Sys.Date(),format = "yyyy-mm-dd"),
-                                         checkboxGroupInput(inputId = "mesurement", label = "Choose any measurement",choices = c("FEV1/FEV6", "SpO2","Weight", "Temperature")),
+                                         checkboxGroupInput(inputId = "mesurement", label = "Choose any measurement",choices = c("FEV1", "SpO2","Weight", "Temperature")),
                                          actionButton(inputId = "click2", label = "Submit!")
                                  ),
                                  
@@ -50,12 +50,12 @@ ui <- fluidPage(
  )
 
 server <- function(input, output){
-        con <- dbConnect(SQLite(), "/Users/kazumichiyamamoto/sqlite/U_Tokyo_Project.db")
+        con <- dbConnect(SQLite(), "/Users/kazumichiyamamoto/shiny_app_1/U_Tokyo/U_Tokyo_Project.db")
         df_measurement <- data.frame(dbReadTable(con, "Measurement"))
         dbDisconnect(con)
         
         data <- eventReactive(input$click, {
-                con <- dbConnect(SQLite(), "/Users/kazumichiyamamoto/sqlite/U_Tokyo_Project.db")
+                con <- dbConnect(SQLite(), "/Users/kazumichiyamamoto/shiny_app_1/U_Tokyo/U_Tokyo_Project.db")
                 dbWriteTable(con, "Measurement", data.frame(PatientID = input$patientID, Date = as.Date(input$date, "%y-%m-%d"), Timing_of_the_Day = input$timing, FEV6 = input$fev6, FEV1 = input$fev1, SpO2 = input$spo2, Weight = input$weight, Temperature = input$temperature, Pulse = input$pulse, SBP = input$sbp, DBP = input$dbp, stringsAsFactors = FALSE), append = TRUE)
                 data <- dbReadTable(con, "Measurement")
                 dbDisconnect(con)
@@ -64,15 +64,29 @@ server <- function(input, output){
         
         output$table <- renderTable(tail(data(), n=10))
         
-        output$plot <- renderPlot(
+       
+        
+        output$plot <- renderPlot({
+                input$click2
+                isolate({
+                        if(input$mesurement == "FEV1"){
                 df_measurement %>%
                         filter(PatientID == input$patientID2) %>%
                         filter(Date > input$daterange[1] & Date < input$daterange[2] ) %>%
                         ggplot(aes((Date+as.Date("1970-01-01")), FEV1))+
                         geom_line()+
                         xlab("Date")
-        )
-        
+                        } else {
+                                df_measurement %>%
+                                        filter(PatientID == input$patientID2) %>%
+                                        filter(Date > input$daterange[1] & Date < input$daterange[2] ) %>%
+                                        ggplot(aes((Date+as.Date("1970-01-01")), SpO2))+
+                                        geom_line()+
+                                        xlab("Date")               
+                                }
+                        
+                })
+        })
 }
 
 # Run the application 
