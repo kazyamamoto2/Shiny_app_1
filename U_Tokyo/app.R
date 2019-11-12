@@ -13,7 +13,7 @@ ui <- fluidPage(
                                  sidebarPanel(
                          numericInput(inputId = "patientID", label = "Input your Patient ID", value = NULL),
                          dateInput(inputId = "date", label = "Today's date", value = date()),
-                         selectInput(inputId = "timing", label = "Select the timing of the day", choices = c("Morning", "Noon", "Evening")),
+                         selectInput(inputId = "timing", label = "Select the timing of the day", choices = c("Morning", "Evening")),
                          numericInput(inputId = "fev6",label = "FEV6", value = NULL),
                          numericInput(inputId = "fev1",label = "FEV1", value = NULL),
                          numericInput(inputId = "spo2",label = "SpO2", value = NULL),
@@ -70,19 +70,21 @@ server <- function(input, output){
                 input$click2
                 isolate({
                         if(input$mesurement == "FEV1"){
-                df_measurement %>%
-                        filter(PatientID == input$patientID2) %>%
-                        filter(Date > input$daterange[1] & Date < input$daterange[2] ) %>%
-                        ggplot(aes((Date+as.Date("1970-01-01")), FEV1))+
-                        geom_line()+
-                        xlab("Date")
-                        } else {
                                 df_measurement %>%
-                                        filter(PatientID == input$patientID2) %>%
-                                        filter(Date > input$daterange[1] & Date < input$daterange[2] ) %>%
-                                        ggplot(aes((Date+as.Date("1970-01-01")), SpO2))+
-                                        geom_line()+
-                                        xlab("Date")               
+                                filter(PatientID == input$patientID2) %>%
+                                filter(Date > input$daterange[1] & Date < input$daterange[2] ) %>%
+                                ggplot(aes((Date+as.Date("1970-01-01")), FEV1))+
+                                geom_line()+
+                                xlab("Date")+
+                                ylim(0,NA)
+                        } else {
+                                 df_measurement %>%
+                                filter(PatientID == input$patientID2) %>%
+                                filter(Date > input$daterange[1] & Date < input$daterange[2] ) %>%
+                                ggplot(aes((Date+as.Date("1970-01-01")), SpO2))+
+                                geom_line()+
+                                xlab("Date")+
+                                ylim(c(75,100))
                                 }
                         
                 })
