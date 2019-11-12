@@ -5,6 +5,7 @@ library(tidyverse)
 ui <- fluidPage(
         sidebarLayout(
                 sidebarPanel(
+                        tags$h3("Change of Suicide Rate per Year"),
                         fileInput(inputId = "data_file", label = "Choose CSV File",
                                   accept = ".csv", buttonLabel = "Browse...",
                                   placeholder = "No file selected"),
@@ -12,17 +13,23 @@ ui <- fluidPage(
                          sliderInput(inputId = "date_range",label = "Select period", value = c(1990, 2000),min = 1970,
                                      max = 2020),
                        
-                         checkboxGroupInput(inputId = "country", label = "choose country",choices = c("Japan", "Republic of Korea","United States of America", "France"))
+                         checkboxGroupInput(inputId = "country", label = "choose country",choices = c("Japan", "Republic of Korea","United States of America", "France")),
                         
+                        actionButton(inputId = "click", label = "Display!")
                 ),
-                mainPanel(plotOutput(outputId = "plot"))
+                mainPanel(
+                        
+                        tags$h3("Number of Suicide per 100,000"),
+                        plotOutput(outputId = "plot"))
+                        
         )
 )
 
 # Define server logic required to draw a histogram
 server <- function(input, output) {
         #uploaded data
-        csv_file <- reactive({df <- read_csv(input$data_file$datapath)
+        csv_file <- reactive({
+                df <- read_csv(input$data_file$datapath)
         #mutate the rate of suicide
         df <- df %>%
                 mutate(percentage = suicides_no/population)
@@ -39,11 +46,14 @@ server <- function(input, output) {
        })
         
         output$plot <- renderPlot({
+                input$click
+                isolate({
                 # yearly change among countries
                 ggplot(csv_file(), aes(x=year, y=no_per_100000, color = country))+
                         geom_point()+
                         geom_line()
                        })
+                                })
 }
 
 # Run the application 
