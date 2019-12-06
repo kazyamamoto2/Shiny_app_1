@@ -1,0 +1,12 @@
+name: shiny_datacamp2
+title: shiny_datacamp2
+username:
+account: airwaystenosis
+server: shinyapps.io
+hostUrl: https://api.shinyapps.io/v1
+appId: 1193935
+bundleId: 2419948
+url: https://airwaystenosis.shinyapps.io/shiny_datacamp2/
+when: 1568714670.41958
+asMultiple: FALSE
+asStatic: FALSE

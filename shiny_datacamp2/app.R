@@ -1,0 +1,55 @@
+library(shiny)
+library(tidyverse)
+
+# Define UI for application that draws a histogram
+ui <- fluidPage(
+        sidebarLayout(
+                sidebarPanel(
+                        tags$h3("Change of Suicide Rate per Year"),
+                        
+                        sliderInput(inputId = "date_range",label = "Select period", value = c(1990, 2000),min = 1970,
+                                    max = 2020),
+                        
+                        checkboxGroupInput(inputId = "country", label = "choose country",selected = "Japan", choices = c("Japan", "Republic of Korea","United States of America", "France")),
+                        
+                        actionButton(inputId = "click", label = "Display!")
+                ),
+                mainPanel(
+                        
+                        tags$h3("Number of Suicide per 100,000"),
+                        plotOutput(outputId = "plot"))
+                
+        )
+)
+
+# Define server logic required to draw a histogram
+server <- function(input, output) {
+        #uploaded data
+        csv_file <- reactive({
+                df <- read_csv("who_suicide_statistics.csv")
+               
+                # reorder the level
+                df$age <- factor(df$age, levels = c("5-14 years", "15-24 years", "25-34 years", "35-54 years", "55-74 years", "75+ years"))
+                # filter and group 4 countries
+                df_filtered <- df %>%
+                        filter(country == input$country ) %>%
+                        filter(year > input$date_range[1] & year < input$date_range[2]) %>%
+                        group_by(country, year) %>%
+                        summarize(total_no = sum(suicides_no),
+                                  total_pop = sum(population),
+                                  no_per_100000 = total_no/total_pop*100000)
+        })
+        
+        output$plot <- renderPlot({
+                input$click
+                isolate({
+                        # yearly change among countries
+                        ggplot(csv_file(), aes(x=year, y=no_per_100000, color = country))+
+                                geom_point()+
+                                geom_line()
+                })
+        })
+}
+
+# Run the application 
+shinyApp(ui = ui, server = server)
